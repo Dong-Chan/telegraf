@@ -68,7 +68,7 @@ var DbsizeMappings = map[string]string{
 var ReplicationMappings = map[string]string{
 	"Slave_IO_Running":      "slave_io_running",
 	"Slave_SQL_Running":     "slave_sql_running",
-	"Seconds_Behind_Master": "seconds_Behind_Master",
+	"Seconds_Behind_Master": "seconds_behind_master",
 	"Read_Master_Log_Pos":   "read_master_log_pos",
 	"Exec_Master_Log_Pos":   "exec_master_log_pos",
 	"SQL_Delay":             "sql_delay",
