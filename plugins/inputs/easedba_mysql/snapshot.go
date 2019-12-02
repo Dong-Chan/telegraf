@@ -143,6 +143,7 @@ func (m *Mysql) gatherSnapshot(db *sql.DB, serv string, accumulator telegraf.Acc
 	}
 	fields["trx_snapshot"] = text
 
+	fields["trx_history"] = "{}"
 	// if a transaction is blocking others, try to fetch the history sql of this transaction
 	if len(blockingThreadIds) > 0 {
 		ids := ""
@@ -186,7 +187,7 @@ func (m *Mysql) gatherSnapshot(db *sql.DB, serv string, accumulator telegraf.Acc
 
 
 	}
-	fields["trx_history"] = "{}"
+
 
 	accumulator.AddFields(easedbautl.SchemaSnapshot, fields, tags)
 
