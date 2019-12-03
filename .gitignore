@@ -4,3 +4,4 @@
 /telegraf.gz
 /vendor
 /.idea
+.DS_Store
