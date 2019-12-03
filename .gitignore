@@ -5,5 +5,3 @@
 /vendor
 /.idea
 
-.DS_Store
-plugins/inputs/tmp_diskio/
