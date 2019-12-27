@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/telegraf/plugins/inputs/system"
 	"net"
 	"strings"
+	"time"
 )
 
 var statusMap = make(map[string]*Status)
@@ -120,8 +121,12 @@ func (s *NetIOStats) Gather(acc telegraf.Accumulator) error {
 			if err != nil {
 				continue
 			}
-			adaptedFields[k] = v
-
+			switch k {
+			case "err_in", "err_out", "drop_in", "drop_out":
+				adaptedFields[k] = v
+			case "bytes_sent", "bytes_recv", "packets_sent", "packets_recv":
+				adaptedFields[k] = v / (s.CurrTime.Sub(s.LastTime).Nanoseconds() / int64(time.Second))
+			}
 		}
 
 		acc.AddCounter("net", adaptedFields, tags)
