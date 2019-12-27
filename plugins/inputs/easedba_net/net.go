@@ -2,14 +2,15 @@ package easedba_net
 
 import (
 	"fmt"
-	"net"
-	"strings"
-
 	"github.com/influxdata/telegraf"
 	"github.com/influxdata/telegraf/filter"
 	"github.com/influxdata/telegraf/plugins/inputs"
 	"github.com/influxdata/telegraf/plugins/inputs/system"
+	"net"
+	"strings"
 )
+
+var statusMap = make(map[string]*Status)
 
 type NetIOStats struct {
 	filter filter.Filter
@@ -94,16 +95,36 @@ func (s *NetIOStats) Gather(acc telegraf.Accumulator) error {
 		}
 
 		fields := map[string]interface{}{
-			"bytes_sent":   io.BytesSent,
-			"bytes_recv":   io.BytesRecv,
-			"packets_sent": io.PacketsSent,
-			"packets_recv": io.PacketsRecv,
-			"err_in":       io.Errin,
-			"err_out":      io.Errout,
-			"drop_in":      io.Dropin,
-			"drop_out":     io.Dropout,
+			"bytes_sent":   fmt.Sprintf("%d",io.BytesSent),
+			"bytes_recv":   fmt.Sprintf("%d",io.BytesRecv),
+			"packets_sent": fmt.Sprintf("%d",io.PacketsSent),
+			"packets_recv": fmt.Sprintf("%d",io.PacketsRecv),
+			"err_in":       fmt.Sprintf("%d",io.Errin),
+			"err_out":      fmt.Sprintf("%d",io.Errout),
+			"drop_in":      fmt.Sprintf("%d",io.Dropin),
+			"drop_out":     fmt.Sprintf("%d",io.Dropout),
 		}
-		acc.AddCounter("net", fields, tags)
+
+		s, ok := statusMap[io.Name]
+		if ! ok {
+			s = New(io.Name)
+			statusMap[io.Name] = s
+		}
+
+		s.Fill(fields)
+
+		adaptedFields := make(map[string]interface{})
+
+		for k := range fields {
+			v, err := s.GetPropertyDelta(k)
+			if err != nil {
+				continue
+			}
+			adaptedFields[k] = v
+
+		}
+
+		acc.AddCounter("net", adaptedFields, tags)
 	}
 
 	// Get system wide stats for different network protocols
