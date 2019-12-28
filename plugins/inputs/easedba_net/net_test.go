@@ -115,6 +115,7 @@ func TestNetStats(t *testing.T) {
 }
 
 func TestNetStatsPerSec(t *testing.T) {
+	var mps system.MockPS
 	var err error
 	var acc testutil.Accumulator
 
@@ -135,7 +136,9 @@ func TestNetStatsPerSec(t *testing.T) {
 
 	}
 
-	err = (&NetIOStats{}).Gather(&acc)
+	mps.On("NetIO").Return([]net.IOCountersStat{netio}, nil)
+
+	err = (&NetIOStats{ps:&mps, skipChecks: true, IgnoreProtocolStats:true}).Gather(&acc)
 
 	ntags := map[string]string{
 		"interface": "eth0",
@@ -151,6 +154,18 @@ func TestNetStatsPerSec(t *testing.T) {
 		"drop_in":      uint64(7),
 		"drop_out":     uint64(1),
 	}
+
+	metric := testutil.Metric{
+		Measurement: "net",
+		Tags: ntags,
+		Fields: fields1,
+	}
+	metrics := []*testutil.Metric{
+		&metric,
+	}
+
+	acc.Metrics = metrics
+
 
 	acc.AssertContainsTaggedFields(t, "net", fields1, ntags)
 
